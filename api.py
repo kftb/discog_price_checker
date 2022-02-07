@@ -34,31 +34,28 @@ def queryApi(titles):
 
 # ct stores current time
     ts = datetime.datetime.now()
-
+    logging.info('---------------------------------')
     logging.info('Beginn processing at %s', str(ts))
     
     for count, item in enumerate(titles):
         logging.info('Beginn processing search term #%s: %s ', str(count), str(item["nameOfRecord"]))
         api_return = d.search(item["nameOfRecord"], type='release')
         api_return.pages
-        print(api_return)
         results = api_return
-        artist = results[0].artists[0]
+        artist = results[0].fetch('artists')
+
         titles[count]['record_id'] = results[0].id
         titles[count]['matched_title'] = results[0].title
-        titles[count]['matched_artist'] = artist.name
+        titles[count]['matched_artist'] = artist[0]['name']
         titles[count]['timestamp'] = str(ts)
 
-        for release in results:
-            titles[count]['price_lowest'] = release.marketplace_stats.lowest_price.value
-            titles[count]['price_poor'] = release.price_suggestions.poor.value
-            titles[count]['price_fair'] = release.price_suggestions.fair.value
-            titles[count]['price_good'] = release.price_suggestions.good.value
-            titles[count]['price_very_good'] = release.price_suggestions.very_good.value
-            titles[count]['price_very_good_plus'] = release.price_suggestions.very_good_plus.value
-            titles[count]['price_near_mint'] = release.price_suggestions.near_mint.value
-            titles[count]['price_mint'] = release.price_suggestions.mint.value
-        logging.info('-------------------------------------------------------------')
+        prices = getattr(results[0], 'price_suggestions', 'n/a')
+        titles[count]['price_poor'] = prices.poor.value
+        titles[count]['price_fair'] = prices.fair.value
+        titles[count]['price_good'] = prices.good.value
+        titles[count]['price_very_good'] = prices.very_good.value
+        titles[count]['price_near_mint'] = prices.near_mint.value
+        titles[count]['price_mint'] = prices.mint.value
     
     logging.info('Finished processing all search terms')
     return(titles)
