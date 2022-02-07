@@ -1,3 +1,4 @@
 .env
 credentials.json
 api.log
+__pycache__
